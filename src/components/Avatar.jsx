@@ -1,10 +1,13 @@
 import { useAnimations, useFBX, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useMemo } from "react";
+import { useRef } from "react";
 import { Vector3 } from "three";
 
 export function Avatar(props) {
+  const { animation } = props;
   const { nodes, materials } = useGLTF("models/68b59421a78b22ed8510f427.glb");
 
   const groupRef = useRef();
@@ -19,40 +22,65 @@ export function Avatar(props) {
   typingAnimations[0].name = "Typing";
   fallingAnimations[0].name = "Falling";
   standingAnimations[0].name = "Standing";
+  const animations = useMemo(() => {
+    return [...typingAnimations, ...fallingAnimations, ...standingAnimations];
+  }, [typingAnimations, fallingAnimations, standingAnimations]);
 
-  const { actions } = useAnimations(
-    [...typingAnimations, ...fallingAnimations, ...standingAnimations],
-    groupRef
-  );
+  // useAnimations 内部监听了 animations， 如果改变会改变actions
+  // 导致动画状态被重置
+  const { actions } = useAnimations(animations, groupRef);
 
+  const animationRef = useRef(animation);
   useEffect(() => {
-    actions["Falling"].fadeIn(0.5).play();
-    setTimeout(() => {
-      actions["Falling"].fadeOut(0.5);
-      actions["Standing"].fadeIn(0.5).play();
-    }, 3000);
+    // 初始化动画，此时不需要过度 fadeIn
+    actions[animationRef.current].play();
   }, []);
+  useEffect(() => {
+    if (animationRef.current === animation) {
+      return;
+    }
+    actions[animationRef.current].fadeOut(0.5);
+    actions[animation].reset().fadeIn(0.5).play();
+    animationRef.current = animation;
+  }, [actions, animation]);
 
-  const { follow, cursorFollow } = useControls({
-    follow: {
+  const headFollowRef = useRef(false);
+  const cursorFollowRef = useRef(false);
+  useControls({
+    headFollow: {
       value: false,
+      onChange: (value) => {
+        headFollowRef.current = value;
+      },
     },
     cursorFollow: {
       value: false,
+      onChange: (value) => {
+        cursorFollowRef.current = value;
+      },
+    },
+    wireframe: {
+      value: false,
+      onChange: (value) => {
+        Object.values(materials).forEach((material) => {
+          material.wireframe = value;
+        });
+      },
     },
   });
+
   useFrame((state) => {
-    if (follow) {
+    if (headFollowRef.current) {
       groupRef.current.getObjectByName("Head").lookAt(state.camera.position);
     }
-    if (cursorFollow) {
+    if (cursorFollowRef.current) {
       const cursorPoint = new Vector3(state.pointer.x, state.pointer.y, 1.0);
       groupRef.current.getObjectByName("Spine").lookAt(cursorPoint);
     }
   });
 
   return (
-    <group ref={groupRef} rotation={[Math.PI / 2, Math.PI, 0]} dispose={null}>
+    <group ref={groupRef} rotation={[Math.PI / 2, Math.PI, 0]}>
       <primitive object={nodes.Hips} />
       <skinnedMesh
         geometry={nodes.Wolf3D_Hair.geometry}
