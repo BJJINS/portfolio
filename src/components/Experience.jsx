@@ -1,6 +1,7 @@
 import { OrbitControls } from "@react-three/drei";
 import { useControls } from "leva";
 import { Perf } from "r3f-perf";
+import { Avatar } from "./avatar";
 
 export const Experience = () => {
   useControls({
@@ -12,10 +13,11 @@ export const Experience = () => {
     <>
       <OrbitControls />
       <Perf position="top-left" />
-      <mesh>
-        <boxGeometry />
-        <meshNormalMaterial />
-      </mesh>
+      <ambientLight intensity={1} />
+      <axesHelper />
+      <group >
+        <Avatar />
+      </group>
     </>
   );
 };
