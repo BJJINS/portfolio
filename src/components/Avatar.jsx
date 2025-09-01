@@ -1,9 +1,11 @@
 import { useAnimations, useFBX, useGLTF } from "@react-three/drei";
-import { useEffect } from "react";
-import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useControls } from "leva";
+import { useEffect, useRef } from "react";
+import { Vector3 } from "three";
 
 export function Avatar(props) {
-  const { nodes, materials } = useGLTF("models/68b582a16b7c5bd83d975ab0.glb");
+  const { nodes, materials } = useGLTF("models/68b59421a78b22ed8510f427.glb");
 
   const groupRef = useRef();
   const { animations: typingAnimations } = useFBX("animations/Typing.fbx");
@@ -11,7 +13,7 @@ export function Avatar(props) {
     "animations/Falling Idle.fbx"
   );
   const { animations: standingAnimations } = useFBX(
-    "animations/Standing Idle.fbx"
+    "animations/Standing W_Briefcase Idle.fbx"
   );
 
   typingAnimations[0].name = "Typing";
@@ -24,8 +26,30 @@ export function Avatar(props) {
   );
 
   useEffect(() => {
-    actions["Typing"].play();
+    actions["Falling"].fadeIn(0.5).play();
+    setTimeout(() => {
+      actions["Falling"].fadeOut(0.5);
+      actions["Standing"].fadeIn(0.5).play();
+    }, 3000);
   }, []);
+
+  const { follow, cursorFollow } = useControls({
+    follow: {
+      value: false,
+    },
+    cursorFollow: {
+      value: false,
+    },
+  });
+  useFrame((state) => {
+    if (follow) {
+      groupRef.current.getObjectByName("Head").lookAt(state.camera.position);
+    }
+    if (cursorFollow) {
+      const cursorPoint = new Vector3(state.pointer.x, state.pointer.y, 1.0);
+      groupRef.current.getObjectByName("Spine").lookAt(cursorPoint);
+    }
+  });
 
   return (
     <group ref={groupRef} rotation={[Math.PI / 2, Math.PI, 0]} dispose={null}>
@@ -96,4 +120,4 @@ export function Avatar(props) {
   );
 }
 
-useGLTF.preload("models/68b582a16b7c5bd83d975ab0.glb");
+useGLTF.preload("models/68b59421a78b22ed8510f427.glb");
