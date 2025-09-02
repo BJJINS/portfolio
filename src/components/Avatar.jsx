@@ -1,9 +1,7 @@
 import { useAnimations, useFBX, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
-import { useEffect } from "react";
-import { useMemo } from "react";
-import { useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Vector3 } from "three";
 
 export function Avatar(props) {
@@ -80,7 +78,7 @@ export function Avatar(props) {
   });
 
   return (
-    <group ref={groupRef} rotation={[Math.PI / 2, Math.PI, 0]}>
+    <group ref={groupRef} rotation={[Math.PI / 2, Math.PI, -Math.PI / 2]}>
       <primitive object={nodes.Hips} />
       <skinnedMesh
         geometry={nodes.Wolf3D_Hair.geometry}
