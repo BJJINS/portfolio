@@ -1,6 +1,5 @@
 import { Environment, OrbitControls, Sky, useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import { Perf } from "r3f-perf";
 import { Avatar } from "./avatar";
 
 export const Experience = () => {
@@ -15,8 +14,6 @@ export const Experience = () => {
 
   return (
     <>
-      <OrbitControls />
-      <Perf position="top-left" />
       <Sky
         distance={450000}
         sunPosition={[0, 1, 0]}
